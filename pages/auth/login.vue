@@ -20,6 +20,7 @@
                 >Forgot Password?</anchor
             >
 
+            <pre>{{ user }}</pre>
             <p v-if="errorMessage" class="error-message">
                 {{ errorMessage }}
             </p>
@@ -58,10 +59,12 @@ const loading = ref(false)
 const email = ref("")
 const password = ref("")
 const errorMessage = ref("")
-
-async function handleSignIn(provider: Provider) {
+const user = computed(() => {
+    return $User.get
+})
+async function handleSignIn(provider: AuthProvider) {
     if (provider === "email") loading.value = true
-    errorMessage.value = await signIn(provider, email.value, password.value)
+    await $User.signIn(provider, email.value, password.value)
     loading.value = false
 }
 </script>

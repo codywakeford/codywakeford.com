@@ -13,8 +13,12 @@
                 <nuxt-link to="/#why">Why Me?</nuxt-link>
                 <nuxt-link to="/#reviews">Reviews</nuxt-link>
                 <nuxt-link to="/#contact">Contact Me</nuxt-link>
-                <nuxt-link to="/auth/login">
+
+                <nuxt-link v-if="!$User.get" to="/auth/login">
                     <button-primary-m>Sign In</button-primary-m>
+                </nuxt-link>
+                <nuxt-link to="/dashboard" v-else>
+                    <button-primary-m>Dashboard</button-primary-m>
                 </nuxt-link>
             </div>
         </content>

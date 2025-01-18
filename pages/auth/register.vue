@@ -58,7 +58,7 @@ const loading = ref(false)
 const errorMessage = ref("")
 const successMessage = ref("")
 
-async function handleSignUp(provider: Provider) {
+async function handleSignUp(provider: AuthProvider) {
     if (provider === "email") loading.value = true
     const error = await signUp(provider, email.value, password.value)
 
