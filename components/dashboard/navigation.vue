@@ -6,11 +6,7 @@
 
         <cflex class="links">
             <nuxt-link to="/dashboard/client">
-                <Icon
-                    icon="material-symbols:design-services-outline-sharp"
-                    width="30"
-                    color="white"
-                />
+                <Icon icon="material-symbols:construction" width="30" color="white" />
             </nuxt-link>
             <nuxt-link to="/dashboard/chatroom">
                 <!-- <btn> -->
@@ -20,11 +16,11 @@
             </nuxt-link>
 
             <nuxt-link to="/dashboard/client/documents">
-                <Icon icon="material-symbols-light:docs-outline" width="30" color="white" />
+                <Icon icon="ic:baseline-insert-drive-file" width="30" color="white" />
             </nuxt-link>
 
             <nuxt-link to="/dashboard/client/billing">
-                <Icon icon="material-symbols-light:credit-card-outline" width="30" color="white" />
+                <Icon icon="fluent:wallet-credit-card-16-filled" width="30" color="white" />
             </nuxt-link>
         </cflex>
 

@@ -30,6 +30,7 @@
 import { Icon } from "@iconify/vue"
 definePageMeta({
     layout: "auth",
+    middleware: "dashboard",
 })
 const verifyEmail = ref("")
 

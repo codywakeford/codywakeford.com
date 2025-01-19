@@ -50,7 +50,14 @@ export const useChatroomStore = defineStore("chatrooms", {
                     )
 
                     if (chatroom) {
-                        chatroom.messages = messages
+                        const latestLocalMessageTime =
+                            Number(chatroom.messages.at(-1)?.timestamp) || 0
+
+                        const newMessages = messages.filter(
+                            (message) => Number(message.timestamp) > latestLocalMessageTime
+                        )
+
+                        chatroom.messages.push(...newMessages)
                     }
                 })
             }
@@ -82,6 +89,11 @@ export const useChatroomStore = defineStore("chatrooms", {
                 chatroom.messages = messages
                 chatrooms.push(chatroom)
             }
+
+            chatrooms.forEach((room) => {
+                room.messages.sort((a, b) => Number(a.timestamp) - Number(b.timestamp))
+            })
+
             this.chatrooms = chatrooms
         },
 

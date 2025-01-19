@@ -37,7 +37,7 @@ const truncatedName = computed(() => {
 
 const emits = defineEmits(["delete"])
 
-function downloadFile(url) {
+function downloadFile(url: string) {
     fetch(url)
         .then((response) => response.blob()) // Get the file as a blob
         .then((blob) => {
@@ -62,8 +62,10 @@ function downloadFile(url) {
     gap: 5px;
     border-radius: $border-radius;
 
-    height: 125px;
-    width: 125px;
+    height: min-content;
+    min-width: 175px;
+    height: 175px;
+    max-width: 175px;
     background: rgba(0, 0, 0, 0.2);
 
     .name {

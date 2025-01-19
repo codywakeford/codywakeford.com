@@ -49,6 +49,7 @@
 <script setup lang="ts">
 definePageMeta({
     layout: "auth",
+    middleware: "dashboard",
 })
 import { Icon } from "@iconify/vue"
 

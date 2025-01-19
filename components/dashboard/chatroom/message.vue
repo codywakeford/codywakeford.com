@@ -6,7 +6,20 @@
             recieved: message.sender !== $User.email,
         }"
     >
-        <div class="files">
+        <div class="bottom">
+            <div class="sender">{{ message.sender }}</div>
+
+            <rflex>
+                <div class="time">{{ formatTime(message.timestamp) }}</div>
+                <Icon icon="hugeicons:tick-double-01" v-if="delivered" />
+                <Icon icon="hugeicons:tick-01" v-else />
+            </rflex>
+        </div>
+
+        <div class="content">
+            {{ message.message }}
+        </div>
+        <div class="files" v-if="files.length">
             <dashboard-file-card
                 :delete="false"
                 :download="true"
@@ -14,16 +27,6 @@
                 :key="index"
                 :file="file"
             />
-        </div>
-
-        <div class="content">
-            {{ message.message }}
-        </div>
-
-        <div class="bottom">
-            <div class="time">{{ formatTime(message.timestamp) }}</div>
-            <Icon icon="hugeicons:tick-double-01" v-if="delivered" />
-            <Icon icon="hugeicons:tick-01" v-else />
         </div>
     </div>
 </template>
@@ -46,7 +49,6 @@ function formatTime(timestampString: string): string {
     hours = hours % 12
     hours = hours ? hours : 12
 
-    // Add leading zero for minutes if necessary
     minutes = minutes < 10 ? "0" + minutes : minutes
 
     return `${hours}:${minutes} ${ampm}`
@@ -55,27 +57,35 @@ function formatTime(timestampString: string): string {
 
 <style lang="scss" scoped>
 .message {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 10px;
     font-size: 0.9rem;
+    max-width: 75%;
 
-    padding: 5px 10px;
+    padding-block: 15px;
+    padding-inline: 15px;
     border-radius: $border-radius;
+
     .content {
-        margin-left: auto;
+        margin-block: 0 10px;
     }
+
     .files {
         display: flex;
+        gap: 25px;
     }
 
     .bottom {
         display: flex;
         align-items: center;
-        gap: 5px;
-        margin-left: auto;
+        gap: 10px;
+        margin-bottom: 5px;
     }
+
     &.sent {
+        align-items: flex-end;
         margin-left: auto;
         background: $primary-light;
         color: $text-light1;
@@ -84,10 +94,23 @@ function formatTime(timestampString: string): string {
     &.recieved {
         margin-right: auto;
         background: $secondary;
+        text-align: left;
+    }
+
+    .sender {
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-align: left;
+        margin: 0;
+        z-index: 15;
+
+        .bottom {
+            margin-right: auto;
+        }
     }
 
     .time {
-        font-size: 0.8rem;
+        font-size: 0.75em;
     }
 }
 </style>

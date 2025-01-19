@@ -21,7 +21,6 @@
 .content {
     max-height: 100vh;
     max-width: $dashboard-page-width;
-    // max-width: 100%;
     padding-inline: var(--page-gutter-sm);
     position: relative;
     z-index: 2;

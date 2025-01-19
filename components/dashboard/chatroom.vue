@@ -14,9 +14,9 @@
                 <div class="phase">{{ project.phase }}</div>
             </div>
         </div>
-        <div class="chatroom card">
+        <div class="chatroom card" ref="messagesContainer">
             <div class="messages-container">
-                <div v-if="!messages.length">No messages yet.</div>
+                <div class="no-messages" v-if="!messages.length">No messages yet.</div>
                 <dashboard-chatroom-message
                     v-for="(message, index) of messages"
                     :key="index"
@@ -67,15 +67,18 @@
                 </button>
             </div>
         </div>
-        <div class="docs-container card">
-            <h2>Files</h2>
-            <dashboard-file-card
-                v-for="(file, index) of files"
-                :key="index"
-                :file="file"
-                download
-                :delete="false"
-            />
+        <div class="files-container card">
+            <h2></h2>
+            <div class="files">
+                <dashboard-file-card
+                    class="doc-card"
+                    v-for="(file, index) of files"
+                    :key="index"
+                    :file="file"
+                    download
+                    :delete="false"
+                />
+            </div>
         </div>
     </section>
 </template>
@@ -119,7 +122,6 @@ const messageObj = computed(() => {
 })
 
 function removeFile(fileName: string) {
-    console.log("here")
     const index = messageFiles.value.findIndex((file) => {
         return file.name === fileName
     })
@@ -171,8 +173,7 @@ section {
     display: flex;
     position: relative;
     z-index: 10;
-    max-height: 100vh;
-    min-height: 80vh;
+    height: 100vh;
 }
 
 .card {
@@ -209,15 +210,32 @@ section {
         }
     }
 }
-
-.docs-container {
+.no-messages {
+    position: absolute;
+    top: 25px;
+    color: $text-light3;
+    left: 50%;
+    transform: translateX(-50%);
+}
+.files-container {
+    display: flex;
     flex: 1;
+    padding-block: 25px;
+    padding-inline: 25px;
+
+    .files {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 25px;
+        justify-content: center;
+
+        height: min-content;
+    }
 }
 
 .chatroom {
     display: flex;
     flex-direction: column;
-    gap: 25px;
     max-width: 50%;
     flex: 2;
     position: relative;
@@ -232,7 +250,7 @@ section {
         padding: 15px;
 
         scroll-behavior: smooth;
-        gap: 10px;
+        gap: 25px;
         max-width: 100%;
     }
 }

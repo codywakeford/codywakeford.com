@@ -53,6 +53,7 @@ import { Icon } from "@iconify/vue"
 
 definePageMeta({
     layout: "auth",
+    middleware: "dashboard",
 })
 
 const loading = ref(false)
