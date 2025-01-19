@@ -1,111 +1,148 @@
 <template>
-    <section class="chatroom-container">
-        <div class="messages-container" ref="messagesContainer">
-            <!-- TODO: ui -->
-            <pre>docs: {{ $Chatroom.getChatroomDocuments(projectId) }}</pre>
-            <pre>images: {{ $Chatroom.getChatroomImages(projectId) }}</pre>
-
-            <div v-if="loading" class="loading-state">
-                <p>Loading messages...</p>
-            </div>
-
-            <div v-else-if="messages.length" class="messages">
-                <div
-                    v-for="msg in messages"
-                    :key="msg.id"
-                    class="message"
-                    :class="{
-                        'own-message':
-                            msg.sender === $CurrentUser.displayName ||
-                            msg.sender === $CurrentUser.email,
-                        // loading: msg.loading,
-                        // error: msg.error,
-                    }"
-                >
-                    <div class="message-content">
-                        <strong>{{ msg.sender }}:</strong>
-                        <span v-if="msg.message">{{ msg.message }}</span>
-                        <!-- <a v-if="msg.fileUrl" :href="msg.fileUrl" target="_blank" class="file-link">
-                            📎 {{ msg.fileName }}
-                        </a> -->
-                    </div>
-                    <!-- <div v-if="msg.loading" class="message-status">Sending...</div>
-                    <div v-else-if="msg.error" class="message-status error">
-                        Failed to send. Tap to retry.
-                    </div> -->
+    <section>
+        <div class="chatroom-selection card">
+            <div
+                class="project-card"
+                @click="selectedProjectId = project.id"
+                v-for="project of $Projects.getByEmail($User.email)"
+                :class="{ active: selectedProjectId === project.id }"
+            >
+                <div class="domain">
+                    {{ project.domain }}
                 </div>
-            </div>
-            <div v-else class="empty-state">
-                <p>No messages yet. Start the conversation!</p>
+
+                <div class="phase">{{ project.phase }}</div>
             </div>
         </div>
+        <div class="chatroom card">
+            <div class="messages-container">
+                <div v-if="!messages.length">No messages yet.</div>
+                <dashboard-chatroom-message
+                    v-for="(message, index) of messages"
+                    :key="index"
+                    :message="message"
+                />
+            </div>
 
-        <div class="input-container">
-            <div class="message-form">
-                <div class="input-wrapper">
-                    <input
-                        v-model="message"
-                        type="text"
-                        placeholder="Type a message..."
-                        class="message-input"
-                        :disabled="sending"
-                        @keyup.enter="sendMessage"
-                    />
-                    <label class="file-input-label">
-                        <input
-                            type="file"
-                            @change="handleFileSelect"
-                            class="file-input"
-                            :disabled="sending"
+            <div class="input-container">
+                <div class="input-box">
+                    <div v-if="messageFiles.length" class="message-files">
+                        <dashboard-file-card
+                            @delete="removeFile(file.name)"
+                            :delete="true"
+                            :download="false"
+                            v-for="(file, index) of messageFilesProper"
+                            :key="index"
+                            :file="file"
                         />
-                        <span class="file-button">📎</span>
-                    </label>
+                    </div>
+
+                    <div class="input-wrapper" :class="{ files: messageFiles.length }">
+                        <textarea
+                            v-model="message"
+                            type="text"
+                            placeholder="Type a message..."
+                            class="message-input"
+                            :disabled="sending"
+                            @keyup.enter="sendMessage(messageObj, messageFiles)"
+                        />
+                        <label class="file-input-label">
+                            <input
+                                type="file"
+                                @change="handleFileSelect"
+                                class="file-input"
+                                :disabled="sending"
+                            />
+                            <Icon icon="gravity-ui:paperclip" width="20" />
+                        </label>
+                    </div>
                 </div>
-                <button type="button" class="send-button" :disabled="sending" @click="sendMessage">
-                    {{ sending ? "Sending..." : "Send" }}
+                <button
+                    type="button"
+                    class="send-button"
+                    :disabled="sending"
+                    @click="sendMessage(messageObj, messageFiles)"
+                >
+                    <Icon icon="f7:paperplane-fill" width="25" />
                 </button>
             </div>
         </div>
+        <div class="docs-container card">
+            <h2>Files</h2>
+            <dashboard-file-card
+                v-for="(file, index) of files"
+                :key="index"
+                :file="file"
+                download
+                :delete="false"
+            />
+        </div>
     </section>
-    {{ $Chatroom.get }}
 </template>
 
 <script setup lang="ts">
 import { Icon } from "@iconify/vue"
-import { getDownloadURL, uploadBytes, ref as storageRef } from "firebase/storage"
 
-const route = useRoute()
-const projectId = route.params.id as string
-
-const fileInput = ref<File | null>(null)
+const selectedProjectId = ref("")
 const messagesContainer = ref<HTMLElement | null>(null)
+const messageFiles = ref<File[]>([])
 
-const loading = ref(false)
 const sending = ref(false)
 
-const messages = computed(() => $Chatroom.getChatroomMessages(projectId))
+const files = computed(() => {
+    return $Files.getFilesByProjectId(selectedProjectId.value)
+})
+
+const messageFilesProper = computed(() => {
+    return messageFiles.value.map((file) => {
+        const url = URL.createObjectURL(file)
+        const type = file.type.startsWith("image/") ? "image" : "document"
+
+        return {
+            id: "",
+            name: file.name,
+            timestamp: new Date(),
+            url: url,
+            type: type,
+        } as ProjectFile
+    })
+})
+
+const messages = computed(() => $Chatroom.getChatroomMessages(selectedProjectId.value) || [])
 const message = ref("")
 const messageObj = computed(() => {
     return {
         message: message.value,
         sender: $User.email,
+        files: [],
     }
 })
 
-watch(fileInput, (newValue) => {
-    if (newValue) {
-        sendDocument()
+function removeFile(fileName: string) {
+    console.log("here")
+    const index = messageFiles.value.findIndex((file) => {
+        return file.name === fileName
+    })
+
+    if (index !== -1) {
+        messageFiles.value.splice(index, 1) // This modifies the array in place
     }
-})
+}
 
 watch(messages, (newValue) => {
     scrollToBottom()
 })
 
-function sendMessage() {
-    if (messageObj.value.message === "") return
-    $Chatroom.sendMessage(projectId, messageObj.value)
+async function sendMessage(messageObj: Omit<Message, "id" | "timestamp">, messageFiles: File[]) {
+    if (messageObj.message.trim() === "" && !messageFiles.length) return
+
+    if (messageFiles.length) {
+        messageObj.files = await $Files.saveFiles(selectedProjectId.value, messageFiles)
+    }
+    $Chatroom.sendMessage(selectedProjectId.value, messageObj)
+
     message.value = ""
+    messageFiles = []
 }
 
 function scrollToBottom() {
@@ -119,161 +156,148 @@ function scrollToBottom() {
 function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement
     if (input.files && input.files.length > 0) {
-        fileInput.value = input.files[0]
+        messageFiles.value.push(input.files[0])
     }
 }
 
-async function sendDocument() {
-    console.log("here")
-    if (!fileInput.value) return
-    const file = fileInput.value
-    console.log("here")
-    const $storage = useStorage()
-    const fileStorageRef = storageRef($storage, `${projectId}/files/${file.name}`)
-
-    const userRef = $CurrentUser.reference
-    let fileType: ChatroomDocument["type"] = "document"
-
-    if (file.type.startsWith("image/")) {
-        fileType = "image"
-    } else {
-        fileType = "document"
-    }
-    const message: Omit<Message, "id" | "timestamp"> = {
-        message: `${userRef} has uploaded a document.`,
-        sender: userRef,
-    }
-
-    try {
-        await uploadBytes(fileStorageRef, fileInput.value)
-        const url = await getDownloadURL(fileStorageRef)
-
-        const document = {
-            url: url,
-            name: file.name,
-            type: fileType,
-        } as ChatroomDocument
-
-        $Chatroom.sendDocument(projectId, document)
-
-        await $Chatroom.sendMessage(projectId, message)
-    } catch (error) {
-        console.error("Error uploading document:", error)
-        throw error
-    }
-}
 onMounted(() => {
     scrollToBottom()
+    // selectedProjectId.value = $Projects.getProjects[0].id || ""
 })
 </script>
 
 <style lang="scss" scoped>
-.chatroom-container {
+section {
+    display: flex;
     position: relative;
     z-index: 10;
-    display: flex;
-    width: 70rem;
-    flex-direction: column;
-    height: 100%;
-    min-height: 400px;
-    max-height: calc(100vh - 200px);
-    background: #ffffff;
-    border-radius: 0.5rem;
-    overflow: hidden;
+    max-height: 100vh;
+    min-height: 80vh;
+}
+
+.card {
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    background: $background-light;
+    // border-radius: $border-radius;
 }
-
-.messages-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    scroll-behavior: smooth;
-}
-
-.messages {
+.chatroom-selection {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    flex: 1;
+    // overflow-y: scroll;
+
+    .project-card {
+        padding: var(--page-gutter-sm);
+        cursor: pointer;
+        position: relative;
+
+        &.active {
+            background: $secondary;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                background: $primary;
+                height: 100%;
+                width: 3px;
+                border-top-right-radius: 15px;
+                border-bottom-right-radius: 15px;
+            }
+        }
+    }
 }
 
-.message {
-    max-width: 80%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    background: #f3f4f6;
-    word-break: break-word;
+.docs-container {
+    flex: 1;
+}
 
-    &.own-message {
-        align-self: flex-end;
-        background: #e0f2fe;
+.chatroom {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-width: 50%;
+    flex: 2;
+    position: relative;
+    background: rgb(245, 245, 245);
 
-        strong {
-            color: #0369a1;
+    .messages-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        flex: 1;
+        padding: 15px;
+
+        scroll-behavior: smooth;
+        gap: 10px;
+        max-width: 100%;
+    }
+}
+
+// Message Input
+.input-container {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+    max-width: 100%;
+
+    .input-box {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        background: $secondary;
+        border-radius: $border-radius;
+        flex-direction: column;
+        margin-top: auto;
+
+        .input-wrapper {
+            flex: 1;
+            max-width: 100%;
+            display: flex;
+            gap: 5px;
+            padding: 5px 10px;
+            min-height: 50px;
+            align-items: center;
+
+            &.files {
+                border-top: 1px solid $text-light3;
+            }
+
+            .message-input {
+                max-height: 400px;
+                flex: 1;
+                border: none;
+                background: transparent;
+                font-size: 1rem;
+                resize: none;
+                field-sizing: content;
+
+                &:focus {
+                    outline: none;
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
         }
     }
 
-    &.loading {
-        opacity: 0.7;
-    }
-
-    &.error {
-        border: 1px solid #ef4444;
-    }
-
-    strong {
-        color: #4b5563;
-        margin-right: 0.5rem;
+    button {
+        height: 50px;
+        margin-top: auto;
     }
 }
-
-.message-status {
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-    color: #6b7280;
-
-    &.error {
-        color: #ef4444;
-    }
-}
-
-.input-container {
-    padding: 1rem;
-    border-top: 1px solid #e5e7eb;
-    background: #ffffff;
-}
-
-.message-form {
+.message-files {
     display: flex;
-    gap: 0.5rem;
+    gap: 25px;
+    flex-wrap: wrap;
+    padding: 15px 15px;
 }
-
-.input-wrapper {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    background: #f9fafb;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    padding: 0.25rem 0.5rem;
-}
-
-.message-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-size: 0.875rem;
-    padding: 0.5rem;
-
-    &:focus {
-        outline: none;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-}
-
 .file-input-label {
     cursor: pointer;
     display: flex;
@@ -296,44 +320,23 @@ onMounted(() => {
 }
 
 .send-button {
-    padding: 0.5rem 1rem;
-    background: #3b82f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 5px 20px;
+    background: $primary;
     color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    border-radius: $border-radius;
     cursor: pointer;
-    transition: background-color 0.2s;
 
     &:hover:not(:disabled) {
-        background-color: #2563eb;
+        background-color: $primary-light;
     }
 
     &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
     }
-}
-
-.file-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #3b82f6;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: underline;
-    }
-}
-
-.empty-state,
-.loading-state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    color: #9ca3af;
-    font-style: italic;
 }
 </style>

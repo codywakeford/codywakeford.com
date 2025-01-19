@@ -1,4 +1,8 @@
 $primary: #081c44;
+$primary-light: #0f347c;
+
+$background-light: #ffffff;
+
 $secondary: #ececec;
 
 $text-light1: #f0f0f0;
@@ -17,6 +21,7 @@ $success: rgb(10, 116, 10);
 $border-radius: 5px;
 
 $page-width: 1200px;
+$dashboard-page-width: 1600px;
 
 $header-font: "Open Sans";
 $sub-header-font: "Open Sans";
@@ -27,6 +32,7 @@ $footer-height: 100px;
 
 :root {
     --page-gutter: 50px;
+    --page-gutter-sm: 25px;
 }
 
 @media (max-width: 768px) {

@@ -1,6 +1,5 @@
 import { defineStore } from "pinia"
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth"
-import type { Auth, User } from "firebase/auth"
 
 export const useUserStore = defineStore("userStore", {
     state: () => ({
@@ -14,11 +13,17 @@ export const useUserStore = defineStore("userStore", {
         },
 
         id(state) {
-            return state.user?.id ? state.user.id : "No id"
+            if (!state.user.id) throw new Error("User not found")
+
+            return state.user.id
         },
 
         email(state) {
-            return state.user?.email ? state.user.email : "No email"
+            const email = state.user.email
+
+            if (!email) throw new Error("User not found")
+
+            return email
         },
 
         role(state) {
@@ -52,7 +57,7 @@ export const useUserStore = defineStore("userStore", {
         },
 
         isAuthenticated(state) {
-            return !!state.user.uid
+            return !!state.user.id
         },
     },
 
@@ -66,8 +71,7 @@ export const useUserStore = defineStore("userStore", {
         },
 
         async init() {
-            // this.user = this.readCache()
-            // this.logout()
+            this.user = this.readCache()
         },
 
         async signUp(provider: AuthProvider, email: string, password: string) {
@@ -92,7 +96,7 @@ export const useUserStore = defineStore("userStore", {
 
         async readAccess(id: User["id"]): Promise<User["siteAccess"]> {
             const data = await $fetch<User["siteAccess"]>(`/api/users/access`, {
-                params: { uid: uid },
+                params: { id: id },
             })
 
             return data || []

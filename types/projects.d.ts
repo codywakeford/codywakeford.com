@@ -69,12 +69,6 @@ declare global {
         demoLink?: string
 
         quote: ProjectQuote
-
-        /**A project main docuements.
-         *
-         * Contracts, quotes, invoices, recipts.
-         */
-        documents: ProjectDocument[]
     }
 
     interface ProjectQuote {
@@ -105,12 +99,15 @@ declare global {
         paymentType: "payment" | "subscription"
     }
 
-    interface ProjectDocument {
+    interface ProjectFile {
+        id: string
         name: string
         url: string
-        signed: boolean
-
+        signed?: boolean
+        timestamp: Date
+        type: "image" | "document"
         /**File type extension. E.g pdf, docx */
-        extension: string
+        extension?: string
+        projectId?: Project["id"]
     }
 }

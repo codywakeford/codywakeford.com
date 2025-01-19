@@ -29,6 +29,7 @@
         </cflex>
 
         <cflex class="bottom-links">
+            <nuxt-link @click="$User.logout()">Logout</nuxt-link>
             <nuxt-link to="/dashboard/staff">
                 <Icon
                     icon="material-symbols:design-services-outline-sharp"
@@ -49,7 +50,7 @@ import { Icon } from "@iconify/vue"
 
 <style lang="scss" scoped>
 nav {
-    width: 75px;
+    min-width: 75px;
     background: $primary;
     height: 100%;
 
@@ -61,17 +62,34 @@ nav {
     z-index: 5;
 }
 
+a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+    border-radius: $border-radius;
+}
+
 .links {
     gap: 25px;
 }
 
 .bottom-links {
+    gap: 25px;
     margin-top: auto;
 }
 
 .logo-box {
     img {
-        width: 50px;
+        width: 40px;
     }
+
+    // padding-block: 0px 20px;
+    // border-bottom: 1px solid $primary-light;
+}
+
+.router-link-active {
+    background: $primary-light;
 }
 </style>

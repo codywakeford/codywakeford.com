@@ -1,10 +1,6 @@
 <template>
-    <main class="admin-page">
-        <!-- <VelorisClientsNav /> -->
-
-        <mpage class="admin-mpage">
-            <dashboard-chatroom />
-        </mpage>
+    <main>
+        <dashboard-chatroom />
     </main>
 </template>
 
@@ -20,4 +16,9 @@ definePageMeta({
 })
 </script>
 
-<style lang="sass" scoped></style>
+<style lang="scss" scoped>
+main {
+    max-height: 100%;
+    position: relative;
+}
+</style>

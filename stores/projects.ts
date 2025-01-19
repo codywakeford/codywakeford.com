@@ -14,6 +14,7 @@ export const useProjectStore = defineStore("projects", {
         },
 
         getByEmail: (state) => (email: string) => {
+            console.log(state.projects)
             return state.projects.filter((project) => {
                 for (email in project.emails) return email === email
             })
@@ -43,8 +44,7 @@ export const useProjectStore = defineStore("projects", {
 
     actions: {
         async init() {
-            // if (!import.meta.client) return
-            this.read()
+            if (!import.meta.client) return
 
             const $db = useDb()
             const colRef = collection($db, "projects")
@@ -85,7 +85,7 @@ export const useProjectStore = defineStore("projects", {
 
         async read() {
             const { data } = await useFetch<Project[]>("/api/projects")
-
+            console.log(data.value)
             this.projects = data.value || []
         },
 
@@ -205,7 +205,7 @@ export const useProjectStore = defineStore("projects", {
                 },
             })
 
-            const docs: ProjectDocument[] = [
+            const docs: Omit<ProjectFile, "id">[] = [
                 {
                     name: "Project Proposal",
                     url: quote.proposalUrl,
@@ -218,7 +218,7 @@ export const useProjectStore = defineStore("projects", {
             docs.forEach((doc) => this.addProjectDocument(projectId, doc))
         },
 
-        async addProjectDocument(projectId: string, document: ProjectDocument) {
+        async addProjectDocument(projectId: string, document: Omit<ProjectFile, "id">) {
             await useFetch("/api/projects/document", {
                 method: "POST",
                 body: { id: projectId, document },

@@ -1,9 +1,11 @@
 <template>
-    <div class="pattern-background" />
-    <div class="dashboard">
-        <dashboard-navigation />
-        <div class="nuxt-page">
-            <nuxt-page />
+    <div class="container">
+        <div class="pattern-background" />
+        <div class="dashboard">
+            <dashboard-navigation />
+            <content class="content">
+                <nuxt-page />
+            </content>
         </div>
     </div>
 </template>
@@ -16,8 +18,19 @@
     height: 100%;
 }
 
-.nuxt-page {
+.content {
+    max-height: 100vh;
+    max-width: $dashboard-page-width;
+    // max-width: 100%;
+    padding-inline: var(--page-gutter-sm);
     position: relative;
     z-index: 2;
+    overflow: none;
+}
+
+.container {
+    max-width: 100vw;
+    height: 100%;
+    overflow: hidden;
 }
 </style>

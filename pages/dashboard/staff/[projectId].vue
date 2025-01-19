@@ -37,7 +37,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const projectId = route.params.projectId as string
-const document: ProjectDocument = {
+const document: ProjectFile = {
     name: "Doc",
     extension: ".pdf",
     signed: false,
